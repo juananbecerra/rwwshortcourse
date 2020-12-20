@@ -130,7 +130,7 @@ end
 PAPR = 20*log10(max(abs(Xn))/rms(Xn));
 
 fprintf('Subcarrier separation: %d KHz\n',Df*1e-3);
-fprintf('RB bandwidth: %d KHz\n',14*Df*1e-3);
+fprintf('RB bandwidth: %d KHz\n',12*Df*1e-3);
 fprintf('Occupied bandwidth: %4.2f MHz\n',Nport*Df*1e-6);
 fprintf('Channel: %4.2f MHz\n',NFFT*Df*1e-6);
 fprintf('Analysis bandwidth (including ovs): %4.2f MHz\n',ovs*NFFT*Df*1e-6);
