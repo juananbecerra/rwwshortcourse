@@ -65,6 +65,7 @@ if verbose,
     plot(s_txn, 'Color', 'g', 'Marker', '+', ...
     'MarkerFaceColor', 'g', 'MarkerSize',5, ...
     'LineStyle', 'none');
+    axis square
 end
 
 % EVM

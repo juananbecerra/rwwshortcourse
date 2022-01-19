@@ -12,6 +12,9 @@ model.calculation = 'pinv';
 model.Ka = [0:2:13];
 model.La = 2*ones(size(model.Ka));
 
+% Conjugate of the ML part
+model.conj = 1;
+
 % Part B: not diagonal terms. Delayed envelope. Order 7.
 model.Kb = [2:2:6];
 model.Lb = 2*ones(size(model.Kb));

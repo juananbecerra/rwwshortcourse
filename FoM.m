@@ -20,14 +20,67 @@ verbose = 0;
 
 [x,An,Bn,fs] = generator5G(mu,M1,M2,Nslots,NRB,Psignal,seed,ovs,verbose);
 
-%% Synthetic PA
-gamma = [1, 0, 0]; 
-% gamma = [1, 0.1, 0.1];
-% SNR = 15; 
+%% Case 1:
+% Memoryless, good SNR, linear, without IQ impairments. 
+% gamma = [0 1]; % Memoryless
+% SNR = 65;
+% alpha = [1 0 0 0]; % Linear
+% GainImb = 0; % Gain imbalance (dB)
+% QuadErr = 0; % Quadrature error (degrees)
+
+%% Case 2:
+% Memoryless, very noisy, linear, without IQ impairments. 
+% gamma = [0 1]; % Memoryless
+% SNR = 15;
+% alpha = [1 0 0 0]; % Linear
+% GainImb = 0; % Gain imbalance (dB)
+% QuadErr = 0; % Quadrature error (degrees)
+
+%% Case 3:
+% Memoryless, good SNR, weakly nonlinear (Saleh81 Table I-[9]), without IQ impairments. 
+% gamma = [0 1]; % Memoryless
+% SNR = 65;
+% alpha = [2.1587 1.1517 4.0033 9.1040]; % Weakly nonlinear (Saleh81 Table I-[9])
+% GainImb = 0; % Gain imbalance (dB)
+% QuadErr = 0; % Quadrature error (degrees)
+
+%% Case 4:
+% Memoryless, good SNR, weakly nonlinear, without IQ impairments. 
+% gamma = [0 1]; % Memoryless
+% SNR = 65;
+% alpha = [1 15 1 1]; % Weakly nonlinear
+% GainImb = 0; % Gain imbalance (dB)
+% QuadErr = 0; % Quadrature error (degrees)
+
+%% Case 5:
+% Memoryless, good SNR, strong nonlinearity, without IQ impairments. 
+% gamma = [0 1]; % Memoryless
+% SNR = 65;
+% alpha = [1 100 25 60]; % Strong nonlinearity
+% GainImb = 0; % Gain imbalance (dB)
+% QuadErr = 0; % Quadrature error (degrees)
+
+%% Case 6:
+% With memory effects, good SNR, strong nonlinearity, without IQ impairments. 
+% gamma = [0 1; 1 0.1; 2 0.1]; % Memory effects
+% SNR = 65;
+% alpha = [1 100 25 60]; % Strong nonlinearity. 
+% GainImb = 0; % Gain imbalance (dB)
+% QuadErr = 0; % Quadrature error (degrees)
+
+%% Case 7:
+% With memory effects, good SNR, strong nonlinearity, with IQ impairments. 
+gamma = [0 1; 1 0.1; 2 0.1]; % Memory effects
 SNR = 65;
-alpha = 1; 
-% alpha = 15;
-y = syntheticPA(x,alpha, gamma, SNR);
+alpha = [1 100 25 60]; % Strong nonlinearity. 
+GainImb = 1; % Gain imbalance (dB)
+QuadErr = 3; % Quadrature error (degrees)
+
+%% IQ impairments
+xImp = 10^(-GainImb/20)*real(x)+j*exp(j*QuadErr*pi/180)*10^(GainImb/20)*imag(x);
+
+%% Synthetic PA. 
+y = syntheticPA(xImp,alpha, gamma, SNR);
 
 %% Normalized output signal
 yn=y/norm(y)*norm(x); 
@@ -44,16 +97,17 @@ subplot(212), plot(1:N, imag(x(1:N)), 'b', 1:N, imag(yn(1:N)),'r'),
 xlabel('Samples'), ylabel('Quadrature component')
 
 %% AM/AM and AM/PM characteristics
-figure, plot(dBminst(x),dBminst(y),'r.', 'MarkerSize',6),
+figure, plot(dBminst(xImp),dBminst(y),'r.', 'MarkerSize',6),
 xlabel('P_{in} [dBm]'), ylabel('P_{out} [dBm]'), title('AM/AM'), grid on
 
-figure, plot(abs(x)/max(abs(x)),abs(y)/max(abs(y)),'r.', 'MarkerSize',6),
+figure, plot(abs(xImp)/max(abs(xImp)),abs(y)/max(abs(y)),'r.', 'MarkerSize', 6),
+hold on, plot([0 1], [0 1], 'k:'),
 title('AM/AM - Normalized linear scale'), grid on
 
-figure, plot(dBminst(x),dBminst(y)-dBminst(x),'r.', 'MarkerSize',6),
+figure, plot(dBminst(xImp),dBminst(y)-dBminst(xImp),'r.', 'MarkerSize',6),
 xlabel('P_{in} [dBm]'), ylabel('Gain [dB]'), title('Gain'), grid on
 
-figure, plot(dBminst(x), 180/pi*(phase_pmpi(angle(y)-angle(x))),'r.', 'MarkerSize',6),
+figure, plot(dBminst(xImp), 180/pi*(phase_pmpi(angle(y)-angle(xImp))),'r.', 'MarkerSize',6),
 xlabel('P_{in} [dBm]'), ylabel('Phase shift [degrees]'), title('AM/PM'), grid on
 
 %% Spectrum representation

@@ -1,4 +1,4 @@
-function [Xmat, Rmat] = buildX_GMP(x, n, Qpmax, Qnmax, Ka, Kb, Kc, La, Lb, Lc, Mb, Mc)
+function [Xmat, Rmat] = buildX_GMP(x, n, Qpmax, Qnmax, Ka, Kb, Kc, La, Lb, Lc, Mb, Mc, conjugate)
 % buildX_GMP Generates the measurement matrix of a GMP model
 %
 % [Xmat, Rmat] = function buildX_GMP(x, n, Qpmax, Qnmax, Ka, Kb, Kc, La, Lb, Lc, Mb, Mc)
@@ -14,9 +14,15 @@ for k = 1:length(Ka)
         
         Xa(:,indk) = x(n(1+Qpmax-l:end-Qnmax-l)).*(abs(x(n(1+Qpmax-l:end-Qnmax-l))).^(Ka(k)));
         if(Ka(k)~=0)
-            Regr_a{indk} = sprintf('x(n-%d)*|x(n-%d)|^{%d}',l,l,Ka(k));
+            Regr_a{indk} = sprintf('x(n-%d)|x(n-%d)|^{%d}',l,l,Ka(k));
         else
             Regr_a{indk} = sprintf('x(n-%d)',l);
+        end
+
+        if conjugate && k==1
+            indk = indk + 1;
+            Xa(:,indk) = conj(x(n(1+Qpmax-l:end-Qnmax-l))).*(abs(x(n(1+Qpmax-l:end-Qnmax-l))).^(Ka(k)));
+            Regr_a{indk} = sprintf('x*(n-%d)',l);
         end
     end
 end

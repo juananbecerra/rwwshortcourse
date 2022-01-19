@@ -57,9 +57,11 @@ end
 An = An1+i*An2;
 Ns = length(An);
 
-figure;
-plot(unique(An),'+'); title('Generated ideal constellation'); 
-xlabel('In-phase'), ylabel ('Quadratura')
+if verbose  
+    figure;
+    plot(unique(An),'+'); title('Generated ideal constellation'); 
+    xlabel('In-phase'), ylabel ('Quadratura')
+end
 
 An_symb = reshape(An,Nport,Nsymb);
 An_symb = [ zeros(1,Nsymb);
@@ -102,27 +104,28 @@ for isimb=1:Nsymb
 end
 
 %% Spectrum shaping
-rf = 0.1; span = Nsymb; sps = ovs; 
-flt = rcosdesign(rf,span,sps,'sqrt');
-
-Xn = FFTinterpolate(Xn,1,ovs);
+Xn_ovs = FFTinterpolate(Xn,1,ovs);
 fsout = fs*ovs;
 
-if verbose
-spectrum(Xn,fs*ovs);
-xlabel('Frecuency (MHz)'); ylabel('PSD (dB/Hz)'); title('Signal before spectrum shaping');
-
-figure;
-plot([-511:512]*fs*1e-6/(2*1024),10*log10(abs(fftshift(fft(flt,1024)))));
-xlabel('Frecuency (MHz)'); ylabel('Frequency response of the filter');
-end
-
+L=length(Xn_ovs);
+BW=ceil(L*Nport*Df*0.513/fsout);
+flt_fft=zeros(L,1);
+flt_fft(1:1:BW,1)=ones(BW,1);
+flt_fft(L-BW+1:1:L,1)=ones(BW,1);
+Xn=ifft(flt_fft.*fft(Xn_ovs));
 Xn = scale_dBm(Xn,Psignal);
 
 Ts = 1/(fs*ovs);
 t=[0:(length(Xn)-1)]'*Ts;
 
 if verbose
+spectrum(Xn_ovs,fs*ovs);
+xlabel('Frecuency (MHz)'); ylabel('PSD (dB/Hz)'); title('Signal before spectrum shaping');
+
+figure;
+plot([-L/2+1:L/2]*fsout*1e-6/L,20*log10(abs(fftshift(flt_fft+eps))));
+xlabel('Frecuency (MHz)'); ylabel('Frequency response of the filter (dB)');
+
 spectrum(Xn,fs*ovs);
 xlabel('Frecuency (MHz)'); ylabel('PSD (dB/Hz)'); title('Signal after spectrum shaping');
 
@@ -132,7 +135,7 @@ PAPR = 20*log10(max(abs(Xn))/rms(Xn));
 fprintf('Subcarrier separation: %d KHz\n',Df*1e-3);
 fprintf('RB bandwidth: %d KHz\n',12*Df*1e-3);
 fprintf('Occupied bandwidth: %4.2f MHz\n',Nport*Df*1e-6);
-fprintf('Channel: %4.2f MHz\n',NFFT*Df*1e-6);
+fprintf('OFDM symbol sampling frequency (without ovs): %4.2f MHz\n',NFFT*Df*1e-6);
 fprintf('Analysis bandwidth (including ovs): %4.2f MHz\n',ovs*NFFT*Df*1e-6);
 
 fprintf('CP length: %4.2f us\n',NCP/(fs*ovs)*1e6);
@@ -145,15 +148,17 @@ fprintf('Bit rate: %4.2f Mbps\n',Nb*1e-6/t(end));
 fprintf('PAPR: %4.2f dB\n',PAPR);
 fprintf('Signal power: %4.2f dBm\n',dBm(Xn));
 
-figure;
-hist(real(Xn),1000)
-title('Histogram of the in-phase component');
-xlabel('Re[x(t)]')
+if verbose,
+    figure;
+    hist(real(Xn),1000)
+    title('Histogram of the in-phase component');
+    xlabel('Re[x(t)]')
 
-figure;
-hist(abs(Xn),1000)
-title('Histogram of the absolute value of the complex envelope')
-xlabel('|x(t)|')
+    figure;
+    hist(abs(Xn),1000)
+    title('Histogram of the absolute value of the complex envelope')
+    xlabel('|x(t)|')
+end
 
 end
 
@@ -176,3 +181,4 @@ elseif min([n,m]) == 1
 end;
 d = (b * 2.^[0 : m-1]')';
 end
+

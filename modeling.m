@@ -22,10 +22,9 @@ verbose = 0;
 [x2,~,~,~] = generator5G(mu,M1,M2,Nslots,NRB,Psignal,seed2,ovs,verbose);
 
 % Perform measurement
-% gamma = [1, 0, 0]; 
-gamma = [1, 0.1, 0.1];
-alpha = 1;
-SNR = 50;
+gamma = [0 1; 1 0.1; 2 0.1]; % Memory effects
+SNR = 65;
+alpha = [1 100 25 60]; % Strong nonlinearity. 
 
 y1 = syntheticPA(x1, alpha, gamma, SNR);
 y2 = syntheticPA(x2, alpha, gamma, SNR);

@@ -35,7 +35,7 @@ y = y(n(1+Qpmax:end-Qnmax));
 % Building the measurement matrix
 switch(model.type)
     case 'GMP'
-        [X, Rmat] = buildX_GMP(X, n, Qpmax, Qnmax, Ka, Kb, Kc, La, Lb, Lc, Mb, Mc);
+        [X, Rmat] = buildX_GMP(X, n, Qpmax, Qnmax, Ka, Kb, Kc, La, Lb, Lc, Mb, Mc, model.conj);
 end
 
 if ~isempty(model.h)

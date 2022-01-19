@@ -22,3 +22,5 @@ model.Mb = [];
 model.Kc = [];
 model.Lc = [];
 model.Mc = [];
+
+model.conj = 0;
